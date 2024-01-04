@@ -1,24 +1,45 @@
-// src/LoginScreen.js
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button } from 'react-native';
+import { View, Text, TextInput, Button, Alert } from 'react-native';
 
 const LoginScreen = ({ navigation }) => {
-  const [username, setUsername] = useState('');
+  const [email, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleLogin = () => {
-    // Add your authentication logic here
-    // For example, you might make an API call to validate the credentials
+  const handleLogin = async () => {
+    try {
+      // Make an API call to the login endpoint
+      const response = await fetch('https://dtravelshoot.deducetech.com/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          password,
+        }),
+      });
 
-    // Assume authentication is successful for demonstration purposes
-    const isAuthenticated = true;
+      // Check if the response is successful (status code 2xx)
+      if (response.status===200) {
+        // Assuming the API returns a JSON object with a success property
+        const data = await response.json();
+        console.log('jhv',data);
 
-    if (isAuthenticated) {
-      // Navigate to the main app screen after successful login
-      navigation.navigate('MainAppScreen');
-    } else {
-      // Handle unsuccessful login
-      // Display an error message or take appropriate action
+        if (data) {
+          // Authentication successful
+          navigation.navigate('MainAppScreen');
+        } else {
+          // Authentication failed
+          Alert.alert('Login Failed', 'Invalid username or password');
+        }
+      } else {
+        // Handle non-successful response (status code other than 2xx)
+        Alert.alert('Error', 'Failed to login. Please try again later.');
+      }
+    } catch (error) {
+      // Handle network errors or other exceptions
+      console.error('Login Error:', error);
+      Alert.alert('Error', 'An unexpected error occurred. Please try again later.');
     }
   };
 
@@ -26,8 +47,8 @@ const LoginScreen = ({ navigation }) => {
     <View>
       <Text>Login Page</Text>
       <TextInput
-        placeholder="Username"
-        value={username}
+        placeholder="email"
+        value={email}
         onChangeText={(text) => setUsername(text)}
       />
       <TextInput
