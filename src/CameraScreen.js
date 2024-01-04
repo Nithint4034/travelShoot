@@ -1,10 +1,12 @@
-import { Camera, CameraType } from 'expo-camera';
-import { useState } from 'react';
+import React, { useState, useRef } from 'react';
+import { Camera } from 'expo-camera';
+import * as Location from 'expo-location';
 import { Button, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export default function CameraScreen() {
-  const [type, setType] = useState(CameraType.back);
+  const [type, setType] = useState(Camera.Constants.Type.back);
   const [permission, requestPermission] = Camera.useCameraPermissions();
+  const cameraRef = useRef(null);
 
   if (!permission) {
     // Camera permissions are still loading
@@ -21,16 +23,42 @@ export default function CameraScreen() {
     );
   }
 
+  async function takePicture() {
+    if (cameraRef.current) {
+      // Get the current position
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        console.error('Location permission not granted!');
+        return;
+      }
+
+      const location = await Location.getCurrentPositionAsync({});
+      const latitude = location.coords.latitude;
+      const longitude = location.coords.longitude;
+
+      // Take the picture and associate it with the latitude and longitude
+      const photo = await cameraRef.current.takePictureAsync();
+      console.log('Latitude:', latitude);
+      console.log('Longitude:', longitude);
+      console.log('Picture URI:', photo.uri);
+
+      // You can further process or send the latitude, longitude, and picture URI as needed
+    }
+  }
+
   function toggleCameraType() {
-    setType(current => (current === CameraType.back ? CameraType.front : CameraType.back));
+    setType(current => (current === Camera.Constants.Type.back ? Camera.Constants.Type.front : Camera.Constants.Type.back));
   }
 
   return (
     <View style={styles.container}>
-      <Camera style={styles.camera} type={type}>
+      <Camera style={styles.camera} type={type} ref={cameraRef}>
         <View style={styles.buttonContainer}>
           <TouchableOpacity style={styles.button} onPress={toggleCameraType}>
             <Text style={styles.text}>Flip Camera</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.button} onPress={takePicture}>
+            <Text style={styles.text}>Take Picture</Text>
           </TouchableOpacity>
         </View>
       </Camera>
@@ -49,16 +77,16 @@ const styles = StyleSheet.create({
   buttonContainer: {
     flex: 1,
     flexDirection: 'row',
-    backgroundColor: 'transparent',
-    margin: 64,
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
+    margin: 20,
   },
   button: {
-    flex: 1,
     alignSelf: 'flex-end',
     alignItems: 'center',
   },
   text: {
-    fontSize: 24,
+    fontSize: 18,
     fontWeight: 'bold',
     color: 'white',
   },
