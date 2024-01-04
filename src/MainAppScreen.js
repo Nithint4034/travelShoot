@@ -1,9 +1,11 @@
 // src/MainAppScreen.js
 import React from 'react';
 import { View, Text, Button } from 'react-native';
-import { Camera } from 'react-native-camera';
+import { useNavigation } from '@react-navigation/native';
 
-const MainAppScreen = ({ navigation }) => {
+const MainAppScreen = () => {
+  const navigation = useNavigation();
+
   const handleLogout = () => {
     // Perform any logout logic here
     // For example, reset authentication state, navigate to the login screen, etc.
@@ -11,10 +13,7 @@ const MainAppScreen = ({ navigation }) => {
   };
 
   const handleOpenCamera = () => {
-    // Implement logic to open the camera
-    // This can involve navigating to a new screen with the camera component
-    // For simplicity, we'll just log a message for now
-    console.log('Opening the camera...');
+    navigation.navigate('CameraScreen');
   };
 
   return (
